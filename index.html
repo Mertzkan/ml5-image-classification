@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bilderkennung mit ml5.js</title>
+
+  <link rel="stylesheet" href="style.css" />
+
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.9.4/lib/p5.min.js"></script>
+  <script src="https://unpkg.com/ml5@0.12.2/dist/ml5.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <header>
+    <div class="intro card">
+      <h1>Bilderkennung mit ml5.js</h1>
+      <p>
+        Diese Web-Anwendung verwendet ein vortrainiertes MobileNet-Modell zur Bildklassifikation.
+        Links wird jeweils das Bild gezeigt, rechts die Klassifikation als Balkendiagramm mit Confidence in Prozent.
+      </p>
+      <p class="help">
+        Hilfe: Unten kann ein eigenes Bild hochgeladen oder per Drag and Drop in die Upload-Fläche gezogen werden.
+        Unterstützte Formate: JPG, JPEG, PNG, WEBP.
+      </p>
+      <p id="modelStatus"><strong>Modellstatus:</strong> Modell wird geladen ...</p>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>A1) Beispielbilder</h2>
+
+      <div class="section-label">Richtig klassifizierte Bilder</div>
+      <div class="sample-grid" id="correctSamples"></div>
+
+      <div class="section-label">Falsch klassifizierte Bilder</div>
+      <div class="sample-grid" id="wrongSamples"></div>
+    </section>
+
+    <section class="upload-section card">
+      <h2>A2) Eigenes Bild klassifizieren</h2>
+
+      <div class="upload-layout">
+        <div>
+          <div id="dropZone" class="drop-zone">
+            <p><strong>Bild hier hineinziehen</strong></p>
+            <p>oder</p>
+            <input
+              type="file"
+              id="fileInput"
+              accept="image/png,image/jpeg,image/jpg,image/webp"
+            />
+          </div>
+
+          <div class="controls">
+            <button id="classifyBtn" disabled>Classify</button>
+            <button id="clearBtn" type="button">Zurücksetzen</button>
+          </div>
+
+          <img id="userImage" alt="Benutzerbild" />
+          <p id="userFeedback" class="status">Noch kein Bild geladen.</p>
+
+          <p class="small">
+            Hinweis: Die Klassifikation läuft direkt im Browser. Ungewöhnliche Perspektiven,
+            starke Bearbeitungen oder mehrere Objekte im selben Bild können die Ergebnisse verschlechtern.
+          </p>
+        </div>
+
+        <div class="chart-panel">
+          <canvas id="userChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="discussion card">
+      <h2>Diskussion</h2>
+      <p>
+        Die Experimente zeigen, dass das vortrainierte MobileNet-Modell stark von den im Training gelernten Datenverteilungen profitiert. Bilder mit klar isolierten Objekten und typischen Perspektiven, wie der Storch und der Rochen, wurden korrekt klassifiziert, da ihre visuellen Merkmale gut mit den Trainingsdaten übereinstimmen. Beim Malteser wurde zwar die Kategorie „kleiner Hund“ korrekt erkannt, jedoch nicht die exakte Rasse, was auf die Schwierigkeit feingranularer Klassifikation bei visuell ähnlichen Klassen hinweist.
+        In komplexeren Szenarien traten deutliche Schwächen auf: Das Bild mit dem kleinen Vogel führte zu unsicheren Vorhersagen mit niedriger Confidence, da das Objekt nur einen geringen Anteil des Bildes einnimmt und vom Hintergrund überlagert wird. Dies deutet darauf hin, dass das Modell primär globale Bildmerkmale nutzt und Schwierigkeiten bei der Lokalisierung kleiner Objekte hat.
+        Ähnliche Probleme zeigen sich bei der Szene mit mehreren Hunden und Personen, in der keine eindeutige Objektzuordnung möglich ist, da das Modell keine explizite Segmentierung oder Objekterkennung durchführt.
+        Das gedrehte schwarz-weiße Bild verdeutlicht zusätzlich, dass das Modell sensitiv gegenüber Veränderungen in Orientierung und Farbverteilung ist, da solche Variationen im Trainingsdatensatz vermutlich unterrepräsentiert sind.
+        Insgesamt bestätigen die Ergebnisse, dass vortrainierte Klassifikationsmodelle gut auf standardisierte Eingaben generalisieren, jedoch bei Verteilungsverschiebungen, komplexen Szenen und feingranularen Unterscheidungen an ihre Grenzen stoßen.
+      </p>
+    </section>
+
+    <section class="docs card">
+      <h2>Dokumentation</h2>
+
+      <h3>1) Technisch</h3>
+      <ul>
+        <li>
+          <strong>ml5.js:</strong> High-Level JavaScript-Bibliothek für Machine Learning im Browser.
+          Wird hier verwendet, um ein vortrainiertes MobileNet-Modell für die Bildklassifikation
+          clientseitig auszuführen.
+        </li>
+        <li>
+          <strong>MobileNet:</strong> Ein leichtgewichtiges Convolutional Neural Network (CNN),
+          das auf dem ImageNet-Datensatz trainiert wurde und für effiziente Klassifikation
+          auf Geräten mit begrenzter Rechenleistung optimiert ist.
+        </li>
+        <li>
+          <strong>p5.js:</strong> Wird als Abhängigkeit für die verwendete ml5-Version benötigt.
+        </li>
+        <li>
+          <strong>Chart.js:</strong> Wird zur Visualisierung der Klassifikationsergebnisse als
+          Balkendiagramm verwendet.
+        </li>
+        <li>
+          <strong>HTML5 File API und Drag and Drop API:</strong> Ermöglichen das Laden und
+          Interagieren mit eigenen Bildern direkt im Browser.
+        </li>
+      </ul>
+
+      <p>
+        <strong>Technische Besonderheiten:</strong>
+        Die Klassifikation erfolgt vollständig clientseitig im Browser (Client-side Inference),
+        ohne Serverkommunikation. Für jedes Bild werden die Top-K Vorhersagen des Modells
+        berechnet und deren Confidence-Werte extrahiert. Diese werden in Prozent umgerechnet
+        und in einem Balkendiagramm dargestellt. Die Anwendung prüft das Dateiformat vor
+        der Verarbeitung und stellt das Nutzerbild über <code>URL.createObjectURL()</code> dar.
+      </p>
+
+      <h3>2) Fachlich</h3>
+      <p>
+        In der Anwendung wird ein vortrainiertes MobileNet-Modell verwendet, das auf dem
+        ImageNet-Datensatz trainiert wurde und eine Klassifikation in eine feste Menge
+        vordefinierter Klassen durchführt. Für jedes Bild liefert das Modell eine
+        Wahrscheinlichkeitsverteilung über diese Klassen, wobei die höchsten Werte als
+        Top-K Vorhersagen interpretiert werden.
+      </p>
+
+      <p>
+        Zur Bewertung der Klassifikation werden erwartete Zielklassen definiert und mit den
+        vorhergesagten Labels verglichen. Dadurch kann unterschieden werden, ob ein Bild
+        korrekt oder falsch klassifiziert wurde. Die Auswahl der Beispielbilder erfolgte
+        bewusst so, dass sowohl typische als auch schwierige Fälle abgedeckt werden, z. B.
+        klare Einzelobjekte, kleine Objekte im Hintergrund sowie komplexe Szenen mit mehreren
+        Objekten.
+      </p>
+
+      <p>
+        Die Ergebnisse zeigen, dass das Modell besonders gut bei standardisierten Bildern
+        mit klaren Merkmalen funktioniert, während es bei komplexen Szenen, kleinen Objekten
+        oder ungewöhnlichen Darstellungen an seine Grenzen stößt.
+      </p>
+
+      <p>
+        <strong>Quellen:</strong><br>
+        - ml5.js Dokumentation: <a href="https://ml5js.org/" target="_blank">https://ml5js.org/</a><br>
+        - Chart.js Dokumentation: <a href="https://www.chartjs.org/" target="_blank">https://www.chartjs.org/</a>><br>
+        - ImageNet Datensatz: <a href="https://www.image-net.org/" target="_blank">https://www.image-net.org/</a><br>
+        - Beispielbilder basieren auf ImageNet-Sample-Images:
+         <a href="https://github.com/EliSchwartz/imagenet-sample-images" target="_blank">https://github.com/EliSchwartz/imagenet-sample-images</a>
+      </p>
+    </section>
+  </main>
+
+  <footer>
+    <p class="small">Erstellt für die Aufgabe „Bilderkennung mit dem ml5 Framework“.</p>
+  </footer>
+</body>
+</html>
