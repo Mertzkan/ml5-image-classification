@@ -34,14 +34,14 @@ const sampleData = {
       id: "wrong2",
       src: "img/wrong2.jpeg",
       alt: "Hundeshow mit mehreren Hunden und Menschen",
-      expectedKeywords: ["springer", "spaniel"],
+      expectedKeywords: ["springer spaniel"],
       expectedLabelText: "springer spaniel"
     },
     {
       id: "wrong3",
       src: "img/wrong3.jpeg",
       alt: "Hund in schwarz-weiß, auf dem Kopf gedreht",
-      expectedKeywords: ["airedale", "dog"],
+      expectedKeywords: ["airedale"],
       expectedLabelText: "airedale dog"
     }
   ]
